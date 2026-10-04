@@ -251,4 +251,38 @@
   targetFrame = calculateTargetFrame();
   currentFrame = targetFrame;
   preloadAllFrames();
+
+  // Scroll Animation for Sections
+  function setupScrollAnimations() {
+    const sections = document.querySelectorAll('section');
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        } else {
+          // Check if we want them to disappear when scrolling past
+          const rect = entry.target.getBoundingClientRect();
+          // Optional: only remove if it's not the top section or if it scrolled out of view completely
+          entry.target.classList.remove('visible');
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: "0px 0px -10% 0px"
+    });
+
+    sections.forEach(section => {
+      section.classList.add('fade-section');
+      observer.observe(section);
+    });
+  }
+
+  // Initialize the animations once the DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupScrollAnimations);
+  } else {
+    setupScrollAnimations();
+  }
 })();
