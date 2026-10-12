@@ -11,6 +11,7 @@ const MIME_TYPES = {
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.json': 'application/json',
+  '.pdf': 'application/pdf',
 };
 
 const server = http.createServer((req, res) => {
@@ -36,11 +37,17 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    // No cache for dev/live inspection
-    res.writeHead(200, {
+    // Force download for PDFs; serve all other assets normally
+    const responseHeaders = {
       'Content-Type': contentType,
       'Cache-Control': 'no-store, no-cache, must-revalidate',
-    });
+    };
+    if (ext === '.pdf') {
+      const fileName = path.basename(filePath);
+      responseHeaders['Content-Disposition'] = `attachment; filename="${fileName}"`;
+    }
+
+    res.writeHead(200, responseHeaders);
 
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);
