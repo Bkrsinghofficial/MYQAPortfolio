@@ -1,4 +1,39 @@
 (() => {
+  // ── Mobile / low-bandwidth detection ──────────────────────────────────────
+  // On touch devices or slow connections the 300-frame animation (~150 MB of
+  // PNGs) takes 2+ minutes to load. We detect these cases and skip the
+  // animation entirely, showing a static CSS gradient background instead.
+  const isTouchDevice = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const isSlowConnection = connection &&
+    (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
+  const SKIP_ANIMATION = isTouchDevice || isSlowConnection;
+
+  // If mobile/slow, hide the canvas and bail out immediately.
+  if (SKIP_ANIMATION) {
+    const canvas = document.getElementById('animationCanvas');
+    if (canvas) {
+      canvas.style.display = 'none';
+    }
+    const scrollContainer = document.getElementById('scrollContainer');
+    if (scrollContainer) {
+      scrollContainer.style.display = 'none';
+    }
+    // Apply a static dark gradient matching the design palette so the page
+    // still looks great without the animation.
+    document.body.style.background =
+      'linear-gradient(135deg, #070a12 0%, #0b1120 40%, #0f172a 70%, #07101e 100%)';
+
+    // Still set up the section scroll animations (lightweight)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupScrollAnimations);
+    } else {
+      setupScrollAnimations();
+    }
+    return; // skip all image loading
+  }
+
+  // ── Desktop full animation ─────────────────────────────────────────────────
   const TOTAL_FRAMES = 300;
   const FOLDER_PATH = 'Scrollbackground';
   const FRAME_PREFIX = 'ezgif-frame-';
@@ -182,7 +217,9 @@
   }
 
   // Batch loader with concurrency control
-  async function loadInBatches(indices, concurrency = 10) {
+  // Reduce concurrency on slower connections to avoid overwhelming the network.
+  const DEFAULT_CONCURRENCY = (connection && ['4g'].includes(connection.effectiveType)) ? 8 : 12;
+  async function loadInBatches(indices, concurrency = DEFAULT_CONCURRENCY) {
     const queue = indices.slice();
     const workers = [];
     for (let w = 0; w < concurrency; w++) {
@@ -252,7 +289,7 @@
   currentFrame = targetFrame;
   preloadAllFrames();
 
-  // Scroll Animation for Sections
+  // Scroll Animation for Sections — also called from the mobile early-exit path
   function setupScrollAnimations() {
     const sections = document.querySelectorAll('section');
     if (sections.length === 0) return;
