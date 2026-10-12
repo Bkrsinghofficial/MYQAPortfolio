@@ -65,3 +65,116 @@ canvas#animationCanvas {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS OVERRIDES (max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* -------------------------------------------------------------------------
+     1. Fix Background Canvas / Viewport Jumping (Dynamic Address Bar)
+     ------------------------------------------------------------------------- */
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Stable fixed background: uses 100dvh (dynamic viewport height) so the canvas
+     never jumps when the mobile browser's URL bar expands or collapses */
+  .scroll-container,
+  canvas#animationCanvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    /* Fallback for browsers that don't support dvh */
+    height: 100% !important;
+    /* Dynamic viewport height eliminates address-bar jump on iOS/Android */
+    height: 100dvh !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    object-fit: cover !important;
+    /* Force GPU compositing to prevent repaint-triggered jumping */
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+
+  /* -------------------------------------------------------------------------
+     2. Resolve Disappearing Content, Scroll Animations & Overflow Gaps
+     ------------------------------------------------------------------------- */
+  /* Override JS-driven fade-in on mobile to prevent sections staying
+     permanently invisible due to touch-scroll IntersectionObserver timing */
+  .fade-section {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Constrain all sections and main content wrappers to viewport width */
+  main,
+  main > div,
+  section {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Compact vertical padding for mobile sections */
+  section {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  /* -------------------------------------------------------------------------
+     3. Fix Unclickable Links & Buttons (z-index & Touch Event Interception)
+     ------------------------------------------------------------------------- */
+  /* Ensure ALL decorative fixed overlays and blurred backdrops never
+     intercept touch events from content beneath them */
+  .pointer-events-none {
+    pointer-events: none !important;
+  }
+
+  /* Elevate every interactive element above any overlay layer */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    position: relative;
+    z-index: 50 !important;
+    pointer-events: auto !important;
+    /* Remove 300ms tap delay on touch devices */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(56, 189, 248, 0.2);
+  }
+
+  /* Floating "Resume" FAB — position it clear of OS gesture areas */
+  .fixed.bottom-6.right-6 {
+    bottom: 1.25rem !important;
+    right: 1.25rem !important;
+    z-index: 60 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Ensure header and its children are always tappable */
+  header {
+    pointer-events: auto !important;
+    z-index: 55 !important;
+  }
+
+  header a,
+  header button {
+    pointer-events: auto !important;
+    z-index: 56 !important;
+  }
+}
