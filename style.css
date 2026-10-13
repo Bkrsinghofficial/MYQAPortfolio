@@ -70,25 +70,27 @@ canvas#animationCanvas {
    MOBILE RESPONSIVENESS OVERRIDES (max-width: 768px)
    ========================================================================== */
 
-/* On mobile/touch devices the JS will hide the canvas immediately.
-   This CSS rule ensures there's no flash of the canvas before JS runs,
-   and that the background color is already set by the time the page
-   becomes visible — so users see content instantly without a loading delay. */
+/* Canvas visibility is controlled entirely by JavaScript at runtime.
+   - On desktop           : canvas is visible (scroll animation in PNG).
+   - On touch + wifi/4G   : canvas is visible (WebP mobile frames, ~9 KB each).
+   - On touch + 2G/save   : JS adds .canvas-hidden and shows CSS gradient instead.
+   The CSS default is VISIBLE so JS can decide without fighting !important. */
+
+/* Utility class applied by JS when animation should be fully suppressed */
+.canvas-hidden .scroll-container,
+.canvas-hidden canvas#animationCanvas {
+  display: none !important;
+}
+
+/* Static gradient fallback — used as body background when canvas is hidden */
+.bg-gradient-fallback {
+  background: linear-gradient(135deg, #070a12 0%, #0b1120 40%, #0f172a 70%, #07101e 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* Sections below the fold: skip rendering until they scroll near the viewport.
+   Only on touch devices to reduce initial render cost on mobile. */
 @media (hover: none) and (pointer: coarse) {
-  /* Touch device: hide canvas by default, JS will confirm this */
-  .scroll-container,
-  canvas#animationCanvas {
-    display: none !important;
-  }
-
-  /* Ensure body has a solid background on touch devices */
-  body {
-    background: linear-gradient(135deg, #070a12 0%, #0b1120 40%, #0f172a 70%, #07101e 100%) !important;
-    background-attachment: fixed !important;
-  }
-
-  /* Sections below the fold: skip rendering until they scroll near the viewport.
-     This dramatically reduces the initial render cost on mobile. */
   section:not(:first-of-type) {
     content-visibility: auto;
     contain-intrinsic-size: auto 600px;
@@ -101,6 +103,7 @@ canvas#animationCanvas {
     transition: none !important;
   }
 }
+
 
 @media (max-width: 768px) {
 

@@ -15,20 +15,10 @@
   const MOBILE_WEBP = isTouchDevice && !isSlowConnection;
 
 
-  // If truly slow (save-data / 2G), hide canvas and bail out entirely.
+  // If truly slow (save-data / 2G), suppress animation via CSS class.
   if (!MOBILE_WEBP && SKIP_ANIMATION) {
-    const canvas = document.getElementById('animationCanvas');
-    if (canvas) {
-      canvas.style.display = 'none';
-    }
-    const scrollContainer = document.getElementById('scrollContainer');
-    if (scrollContainer) {
-      scrollContainer.style.display = 'none';
-    }
-    // Apply a static dark gradient matching the design palette so the page
-    // still looks great without the animation.
-    document.body.style.background =
-      'linear-gradient(135deg, #070a12 0%, #0b1120 40%, #0f172a 70%, #07101e 100%)';
+    // Add CSS classes — avoids fighting !important with inline styles
+    document.body.classList.add('canvas-hidden', 'bg-gradient-fallback');
 
     // Still set up the section scroll animations (lightweight)
     if (document.readyState === 'loading') {
@@ -37,6 +27,18 @@
       setupScrollAnimations();
     }
     return; // skip all image loading
+  }
+
+  // On mobile with a decent connection, show the WebP animation.
+  // Explicitly ensure the canvas is visible (CSS default is now visible,
+  // but guard against any cached inline style from a previous page load).
+  if (MOBILE_WEBP) {
+    const _canvas = document.getElementById('animationCanvas');
+    const _sc     = document.getElementById('scrollContainer');
+    if (_canvas) { _canvas.style.removeProperty('display'); _canvas.style.display = 'block'; }
+    if (_sc)     { _sc.style.removeProperty('display');     _sc.style.display = 'block'; }
+    // Remove any gradient-fallback class that might have been set
+    document.body.classList.remove('canvas-hidden', 'bg-gradient-fallback');
   }
 
 
