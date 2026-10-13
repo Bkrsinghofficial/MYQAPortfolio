@@ -9,8 +9,14 @@
     (connection.saveData || ['slow-2g', '2g', '3g'].includes(connection.effectiveType));
   const SKIP_ANIMATION = isTouchDevice || isSlowConnection;
 
-  // If mobile/slow, hide the canvas and bail out immediately.
-  if (SKIP_ANIMATION) {
+  // Mobile WebP animation: serve the highly-compressed 800×1200 WebP frames
+  // (~8-10 KB each) instead of the full PNG frames (~500 KB each).
+  // Only skip entirely on very slow connections (2G/save-data).
+  const MOBILE_WEBP = isTouchDevice && !isSlowConnection;
+
+
+  // If truly slow (save-data / 2G), hide canvas and bail out entirely.
+  if (!MOBILE_WEBP && SKIP_ANIMATION) {
     const canvas = document.getElementById('animationCanvas');
     if (canvas) {
       canvas.style.display = 'none';
@@ -33,11 +39,14 @@
     return; // skip all image loading
   }
 
-  // ── Desktop full animation ─────────────────────────────────────────────────
+
+  // ── Frame source: desktop PNG vs mobile WebP ──────────────────────────────
+  // Desktop : Scrollbackground/ezgif-frame-NNN.png  (~500 KB/frame)
+  // Mobile  : Scrollbackground/mobile/ezgif-frame-NNN.webp (~9 KB/frame)
   const TOTAL_FRAMES = 300;
-  const FOLDER_PATH = 'Scrollbackground';
+  const FOLDER_PATH  = MOBILE_WEBP ? 'Scrollbackground/mobile' : 'Scrollbackground';
   const FRAME_PREFIX = 'ezgif-frame-';
-  const FRAME_EXT = '.png';
+  const FRAME_EXT    = MOBILE_WEBP ? '.webp' : '.png';
 
   const canvas = document.getElementById('animationCanvas');
   const ctx = canvas.getContext('2d', { alpha: false });

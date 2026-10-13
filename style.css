@@ -210,4 +210,79 @@ canvas#animationCanvas {
     pointer-events: auto !important;
     z-index: 56 !important;
   }
+
+  /* -------------------------------------------------------------------------
+     4. Fix Massive Blank Gaps (Issue #1)
+     Prevents desktop-sized elements from breaking out of containers
+     ------------------------------------------------------------------------- */
+  body, html {
+    overflow-x: hidden;
+  }
+
+  /* Section containers adapt to content height and prevent overflow gaps */
+  section {
+    height: auto !important;
+    min-height: unset;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* -------------------------------------------------------------------------
+     5. Fix Cramped SPECIALIZATION Label (Issue #2)
+     Stack label and value vertically on mobile
+     ------------------------------------------------------------------------- */
+  .profile-spec-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+}
+
+/* ==========================================================================
+   DIAGRAM RESPONSIVE WRAPPER
+   Full-width non-scrolling diagrams — scale cleanly on all screen sizes.
+   On mobile, images shrink proportionally using object-fit and maintain
+   legibility without any horizontal overflow or cut-off content.
+   ========================================================================== */
+.diagram-scroll-wrapper {
+  width: 100%;
+  overflow: hidden; /* No horizontal scrollbar at any viewport width */
+}
+
+.diagram-scroll-wrapper img {
+  width: 100%;        /* Always fill the container */
+  height: auto;       /* Maintain natural aspect ratio */
+  max-width: 100%;    /* Never bleed outside container */
+  display: block;     /* Remove inline-block gap */
+  object-fit: contain; /* Show the full diagram, never crop */
+}
+
+/* On small screens, give the diagram a minimum rendered height so
+   very wide flowcharts don't collapse to a tiny unreadable strip */
+@media (max-width: 768px) {
+  .diagram-scroll-wrapper img {
+    /* min-height ensures the image is always visually usable on narrow screens */
+    min-height: 180px;
+  }
+}
+
+/* ==========================================================================
+   FIX STICKY HOVER STATES ON TOUCH DEVICES (Issue #5)
+   Only apply hover effects on devices with a real pointer (mouse/trackpad)
+   ========================================================================== */
+@media (hover: hover) and (pointer: fine) {
+  a:hover,
+  button:hover,
+  [role="button"]:hover {
+    /* Hover effects are valid — Tailwind hover utilities already handle this.
+       This block ensures any custom :hover rules in future are scoped here. */
+  }
+
+  /* Elevate card hover borders only on mouse devices */
+  .hover\:border-cyan-400\/40:hover,
+  .hover\:border-blue-400\/40:hover {
+    border-color: rgba(34, 211, 238, 0.4);
+  }
 }
